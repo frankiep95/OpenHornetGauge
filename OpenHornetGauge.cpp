@@ -93,10 +93,12 @@ void OpenHornetGauge::home() {
     decrement();
     delay(20);
   }
-  // unsigned int temp = motorSpeed;
-  // motorSpeed = 30000;
-  // command(offset);
-  // while(!commandComplete){updatePos();}
+
+  this->position = 0;
+  unsigned int temp = motorSpeed;
+  motorSpeed = 30000;
+  command(offset);
+  while(!commandComplete){updatePos();}
 
   this->position = 0;
   Serial.println("Homing complete");
