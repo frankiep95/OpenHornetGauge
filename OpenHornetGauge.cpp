@@ -56,9 +56,11 @@ void OpenHornetGauge::increment() {
 }
 
 void OpenHornetGauge::command(unsigned int value) {
+  if(value != position){
   commandComplete = false;
   targetPos = value;
   Serial.println(targetPos);
+  }
 }
 
 void OpenHornetGauge::updatePos() {
