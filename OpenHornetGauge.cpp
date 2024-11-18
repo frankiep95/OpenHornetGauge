@@ -56,10 +56,9 @@ void OpenHornetGauge::increment() {
 }
 
 void OpenHornetGauge::command(unsigned int value) {
-  if(value != position){
+  if(value != targetPos){
   commandComplete = false;
   targetPos = value;
-  Serial.println(targetPos);
   }
 }
 
@@ -74,13 +73,13 @@ void OpenHornetGauge::updatePos() {
 
     if (abs(a - targetPos) < 100 && !commandComplete) {
       commandComplete = true;
-      Serial.println("command Complete");
+      // Serial.println("command Complete");
     }
   }
 }
 
 void OpenHornetGauge::home() {
-  Serial.println("Homing...");
+  // Serial.println("Homing...");
   while (digitalRead(zeroPin) == HIGH) {
     decrement();
     delay(10);
@@ -103,7 +102,7 @@ void OpenHornetGauge::home() {
   while(!commandComplete){updatePos();}
 
   this->position = 0;
-  Serial.println("Homing complete");
+  // Serial.println("Homing complete");
   motorSpeed = temp;
 }
 
