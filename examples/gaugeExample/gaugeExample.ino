@@ -1,42 +1,41 @@
-#include "OpenHornetGauge.h"
+
+#define DCSBIOS_DEFAULT_SERIAL
+
+#include <DcsBios.h>
+#include "Arduino.h"
+#include <OpenHornetGauge.h>
 
 // Create an instance of the gauge give it a name i.e. "test"
 //  arguments are coil 1 pin,coil 2 pin, coil 3 pin, coil 4 pin, zero pin, zero offset(unsigned int)
-OpenHornetGauge test(21, 20, 2, 19, 3, 1200);
+int coil1 = 21;
+int coil2 = 2;
+int coil3 = 20;
+int coil4 = 19;
+int zero = 3;
+// this function takes into account the incorrectly labeled coils on the openhornet analog gauge pcb
+OpenHornetGauge test(coil1, coil2, coil3, coil4, zero);
 
-void setup()
-{
-  // starts the serial port. In this test mode you can use it to send a new position to the gauge 0-65535
-  Serial.begin(115200);
-  while (!Serial){}
-  // Home the gauge. If the gauge is already homed it will move off home and  slowly move back
-  test.home();
+void onPressureAltChange(unsigned int newValue) {
+  test.command(newValue);
+}
+DcsBios::IntegerBuffer pressureAltBuffer(FA_18C_hornet_PRESSURE_ALT, onPressureAltChange);
+
+void setup() {
+
+
+  test.setRotationDegrees(315);  // the total swing of the needle. make 360 if continuous revolution
+  test.setMotorSpeed(10000);      // motor speed setting the lower the number the faster the motor. usually below 800 is too fast for the motor to respond.
+  test.setOffset(800);          // this is the offset to move the needle to the correct 0 position after homing
+
+  test.home();                   // Home the gauge. If the gauge is already homed it will move off home and  slowly move back.this needs to be called after all the other parameters above
+
+  DcsBios::setup();
 }
 
-void loop()
-{
-  
+void loop() {
 
   // update is what makes the motor move. This function is non blocking.
   //  It will increment the motor once per loop cycle.
   test.updatePos();
-
-  static int nextPos = 0;
-  if (Serial.available())  { //this function just checks if there is Serial available
-  //  and converts serial.read() to an int and sends it to .command()
-
-    char c = Serial.read();
-    if (c == 10 || c == 13)
-    {
-      //  the command function is how you pass the new position to the gauge
-      // this takes any where from 0 -65535 as DCS Bios will output that range of values
-      // the library will choose the shortest path from current position to new position
-      test.command(nextPos);
-      nextPos = 0;
-    }
-    else if (c >= '0' && c <= '9')
-    {
-      nextPos = 10 * nextPos + (c - '0');
-    }
-  }
+  DcsBios::loop();
 }
